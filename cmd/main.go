@@ -1,5 +1,9 @@
 package main
 
+import (
+	db "fitness-gpt-backend/internal/db"
+)
+
 func main() {
-	panic("To be implemented!")
+	db.Init();
 }
