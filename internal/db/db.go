@@ -1,49 +1,55 @@
 package db
 
 import (
-	"context"
 	"database/sql"
-	"embed"
+	"fmt"
 	"log"
+	"os"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/pressly/goose/v3"
+    _ "github.com/jackc/pgx/v5/stdlib"
 )
 
-//go:embed migrations/*.sql
-var embedMigrations embed.FS
+const (
+	dialect = "pgx"
+)
 
+// Init initiates DB connection and applies the DB migration files if connection is established.
 func Init() {
-    var db *sql.DB;
+	var db *sql.DB
+	defer db.Close()
 
-    url := "dbname=postgres_db host=localhost port=5432 user=postgres password='postgres'"
-    // TODO conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	db = initConn()
+	migrate(db)
+}
 
-    conn, err := pgx.Connect(context.Background(), url);
-    log.Println("HI ALL")
+func initConn() *sql.DB {
+	connStr := fmt.Sprintf(
+		"dbname=%s host=%s port=%s user=%s password=%s",
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_USERNAME"),
+		os.Getenv("DB_PASSWORD"),
+	)
+
+	db, err := goose.OpenDBWithDriver(dialect, connStr)
 	if err != nil {
-        log.Fatalf("Unable to connect to database: %v\n", err);
+		log.Fatalf("Unable to connect to database: %s", err)
 	}
-	defer conn.Close(context.Background())
 
-    /* driver := "postgres" // Change this according to your database driver
-    dbstring := "user=your_user dbname=your_db_name sslmode=disable" // Change this according to your database connection string 
-    dir := "db/migrations"*/
+	if err = db.Ping(); err != nil {
+		log.Fatalf("Cannot ping database, because: %s", err)
+	}
 
-    goose.SetBaseFS(embedMigrations);
-    if err := goose.SetDialect("postgres"); err != nil {
-        panic(err)
-    }
+	log.Println("Connected to database and pinged it successfully!")
+	return db
+}
 
-    if err := goose.Up(db, "migrations"); err != nil {
-        panic(err)
-    }
+func migrate(db *sql.DB) {
+	if err := goose.Up(db, "../migrations"); err != nil {
+		log.Fatalf("Unable to apply DB migrations: %s", err)
+	}
 
-    // Run the migrations
-   /*  err := goose.Up(dbstring, dir)
-    if err != nil {
-        log.Fatalf("Error migrating the database: %v", err)
-    }
-
-    log.Println("Database migration successful!") */
+	log.Println("Migrated database successfully!")
 }
