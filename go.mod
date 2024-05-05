@@ -16,6 +16,5 @@ require (
 
 require (
 	github.com/jackc/pgx/v5 v5.5.5
-	github.com/joho/godotenv v1.5.1
 	github.com/pressly/goose/v3 v3.20.0
 )

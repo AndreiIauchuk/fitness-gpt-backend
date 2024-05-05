@@ -1,6 +1,7 @@
 FROM golang:alpine
 
 WORKDIR /fitness-gpt-go
+ENV WORK_DIR="/fitness-gpt-go"
 COPY go.mod ./
 RUN go mod download
 
