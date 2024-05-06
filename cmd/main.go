@@ -2,8 +2,8 @@ package main
 
 import (
 	db "fitness-gpt-backend/internal/db"
-	"fmt"
 	"log"
+	"fmt"
 	"net/http"
 )
 
@@ -14,5 +14,8 @@ func main() {
 		fmt.Fprintf(w, "Hello, world")
 	})
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	err := http.ListenAndServe(":8080", nil)
+	if (err != nil) {
+		log.Fatal("Unable to start a web server!")
+	}
 }
