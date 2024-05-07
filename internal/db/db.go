@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
-    _ "github.com/jackc/pgx/v5/stdlib"
 )
 
 const (
@@ -16,10 +16,9 @@ const (
 
 // Init initiates DB connection and applies the DB migration files if connection is established.
 func Init() {
-	var db *sql.DB
+	db := initConn()
 	defer db.Close()
 
-	db = initConn()
 	migrate(db)
 }
 
@@ -47,7 +46,8 @@ func initConn() *sql.DB {
 }
 
 func migrate(db *sql.DB) {
-	if err := goose.Up(db, "../migrations"); err != nil {
+	migrations_dir := fmt.Sprintf("%s/migrations", os.Getenv("WORK_DIR"))
+	if err := goose.Up(db, migrations_dir); err != nil {
 		log.Fatalf("Unable to apply DB migrations: %s", err)
 	}
 
