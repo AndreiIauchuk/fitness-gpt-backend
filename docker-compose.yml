@@ -1,12 +1,12 @@
 services:
-  
+
   backend:
     container_name: fitness-gpt-backend
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - 8080:8080
+      - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -18,16 +18,16 @@ services:
   postgres:
     container_name: fitness-gpt-postgres
     image: postgres:14-alpine
-    expose:
+    ports:
       - "5432"
     volumes:
-      - db:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres_db
+      - POSTGRES_DB=postgres
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U username -d postgres_db" ]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
       interval: 3s
       timeout: 5s
       retries: 4
@@ -35,8 +35,30 @@ services:
     networks:
       - fitness-gpt-network
 
+  # На текущем этапе разработки пускай будет в этом compose для удобства.
+  # В будущем можем перенести в отдельный docker-compose?
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4
+    ports:
+      - "8888:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=username@domain-name.com
+      - PGADMIN_DEFAULT_PASSWORD=password
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - fitness-gpt-network
+
 volumes:
-  db:
+  db-data:
+  pgadmin-data:
+
 
 networks:
   fitness-gpt-network:

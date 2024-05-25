@@ -19,6 +19,7 @@ func Init() {
 	db := initConn()
 	defer db.Close()
 
+	configGoose()
 	migrate(db)
 }
 
@@ -43,6 +44,10 @@ func initConn() *sql.DB {
 
 	log.Println("Connected to database and pinged it successfully!")
 	return db
+}
+
+func configGoose() {
+	goose.SetTableName(os.Getenv("DB_SCHEMA") + ".goose_db_version")
 }
 
 func migrate(db *sql.DB) {
