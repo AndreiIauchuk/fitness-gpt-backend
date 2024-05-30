@@ -17,6 +17,14 @@ services:
     networks:
       - fitness-gpt-network
 
+  frontend:
+    image: front
+    build:
+        context: ./front
+        dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+
   postgres:
     container_name: fitness-gpt-postgres
     image: postgres:14-alpine
